@@ -140,4 +140,5 @@ body {
   padding-top: 13%;
   padding-bottom: 5%;
   cursor: text;
+  overflow-wrap: break-word;
 }
