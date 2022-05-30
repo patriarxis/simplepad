@@ -108,21 +108,20 @@ body {
   height: 100%;
   background-color: var(--dark);
   color: var(--light);
-  overflow: auto;
   scroll-behavior: smooth;
+  overflow: auto;
 }
 
 .app {
   width: 100%;
-  height: auto;
-  margin: auto;
+  height: 100%;
 }
 
 /* Container */
 
 .container {
   width: 100%;
-  height: auto;
+  height: 100%;
   margin: auto;
 }
 
@@ -134,8 +133,8 @@ body {
 .textarea {
   display: block;
   color: var(--light100);
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  min-height: 100vh;
   padding: 20%;
   padding-top: 13%;
   padding-bottom: 5%;
