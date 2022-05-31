@@ -1,8 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa&display=swap');
 
 :root {
-  --font-primary: 'Quicksand', sans-serif;
-  --font-secondary: 'Cormorant Infant', sans-serif;
+  --font-primary: 'Comfortaa', sans-serif;
   --dark: rgb(0, 0, 0);
   --dark100: rgba(0, 0, 0, .8);
   --dark200: rgba(0, 0, 0, .4);
