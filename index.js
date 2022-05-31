@@ -4,11 +4,11 @@ var notes = document.querySelector('.textarea');
 var storedNotes = localStorage.getItem('notes');
 
 notes.addEventListener('input', () => {
-  localStorage.setItem('notes', notes.textContent);
+  localStorage.setItem('notes', notes.innerHTML);
 });
 
 window.addEventListener('load', () => {
-  notes.textContent = storedNotes;
+  notes.innerHTML = storedNotes;
 });
 
 

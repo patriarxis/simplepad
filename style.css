@@ -140,4 +140,5 @@ body {
   padding-bottom: 5%;
   cursor: text;
   overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
