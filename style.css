@@ -90,7 +90,7 @@ a {
 }
 
 html {
-  font-size: clamp(12px, 2vw, 16px);
+  font-size: clamp(10px, 1.4vw, 16px);
   line-height: 1.4;
 }
 
@@ -130,13 +130,16 @@ body {
 }
 
 .textarea {
+  box-sizing: content-box;
   display: block;
   color: var(--light100);
-  width: 100%;
+  width: auto;
+  max-width: 1100px;
   min-height: 100vh;
-  padding: 20%;
+  padding: 10vw;
   padding-top: 13%;
   padding-bottom: 5%;
+  margin: auto;
   cursor: text;
   overflow-wrap: break-word;
   white-space: pre-wrap;
