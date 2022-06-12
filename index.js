@@ -39,3 +39,24 @@ notes.addEventListener('paste', e => {
     selection.addRange(range);
   }
 });
+
+let c = document.querySelectorAll('.btn');
+let link = document.querySelector("a");
+
+document.addEventListener("keydown", event => {
+  if (event.ctrlKey && event.key === "b") {
+    event.preventDefault();
+    document.execCommand('bold', false, null);
+  }
+  if (event.ctrlKey && event.key === "i") {
+    event.preventDefault();
+    document.execCommand('italic', false, null);
+  }
+  if (event.ctrlKey && event.key === "k") {
+    event.preventDefault();
+    let x;
+    if (x = window.prompt("Add hyperlink", "https://example.com")) {
+      document.execCommand('createLink', false, x);
+    }
+  }
+});

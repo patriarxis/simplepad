@@ -12,6 +12,7 @@
   --light200: rgba(255, 255, 255, .4);
   --light300: rgba(255, 255, 255, .10);
   --light400: rgba(255, 255, 255, .05);
+  --blue: rgb(33,101,255);
 }
 
 
@@ -83,10 +84,7 @@ button {
 
 a {
   text-decoration: none;
-  cursor: pointer;
-  display: block;
-  user-select: none;
-  color: var(--light);
+  color: var(--blue);
 }
 
 html {
@@ -135,7 +133,7 @@ body {
   color: var(--light100);
   width: auto;
   max-width: 1100px;
-  min-height: 100vh;
+  min-height: calc(100vh - 20%);
   padding: 10vw;
   padding-top: 13%;
   padding-bottom: 5%;
