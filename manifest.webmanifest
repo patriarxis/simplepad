@@ -1,0 +1,15 @@
+{
+  "background_color": "black",
+  "description": "The simplest notepad",
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "simplepad-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "name": "Simplepad",
+  "short_name": "Spad",
+  "start_url": "/simplepad/index.html"
+}
