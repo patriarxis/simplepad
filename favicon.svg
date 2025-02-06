@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev/svgjs" width="512" height="512"><svg id="SvgjsSvg1001" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #e6e6e6;
+      }
+
+      .cls-2 {
+        fill: #ee4137;
+      }
+
+      .cls-3 {
+        fill: #333;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" x="0" y="0" width="512" height="512" rx="80" ry="80"></rect>
+  <path class="cls-3" d="M384,83.98v24.04c0,11.04-8.95,19.98-19.98,19.98h-216.04c-11.04,0-19.98,8.95-19.98,19.98v216.04c0,11.04-8.95,19.98-19.98,19.98h-24.04c-11.04,0-19.98-8.95-19.98-19.98V83.98c0-11.04,8.95-19.98,19.98-19.98h280.04c11.04,0,19.98,8.95,19.98,19.98Z"></path>
+  <path class="cls-3" d="M448,147.98v280.04c0,11.04-8.95,19.98-19.98,19.98H147.98c-11.04,0-19.98-8.95-19.98-19.98v-24.04c0-11.04,8.95-19.98,19.98-19.98h216.04c11.04,0,19.98-8.95,19.98-19.98v-216.04c0-11.04,8.95-19.98,19.98-19.98h24.04c11.04,0,19.98,8.95,19.98,19.98Z"></path>
+  <rect class="cls-2" x="192" y="192" width="128" height="128" rx="19.98" ry="19.98"></rect>
+</svg><style>@media (prefers-color-scheme: light) { :root { filter: none; } }
+@media (prefers-color-scheme: dark) { :root { filter: none; } }
+</style></svg>
