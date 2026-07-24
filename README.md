@@ -8,8 +8,10 @@ A minimalist rich-text notepad that auto-saves notes to your browser's local sto
 
 ## Features
 
-- Rich text editing (bold, italic, underline, strike, headings, lists, quotes, code, links)
-- Floating format toolbar (selection or empty line)
+- Rich text editing (bold, italic, underline, strike, headings, lists, task lists, quotes, code, links)
+- Highlight, superscript / subscript, text alignment
+- Image insert (stored locally as data URLs)
+- Floating format toolbar with Phosphor icons and hover tooltips
 - Light / dark theme
 - Auto-save to `localStorage`
 

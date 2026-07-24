@@ -1,14 +1,44 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import type { Editor } from "@tiptap/vue-3";
+import {
+  PhArrowClockwise,
+  PhArrowCounterClockwise,
+  PhCode,
+  PhCodeBlock,
+  PhHighlighter,
+  PhImage,
+  PhLink,
+  PhListBullets,
+  PhListChecks,
+  PhListNumbers,
+  PhQuotes,
+  PhTextAlignCenter,
+  PhTextAlignJustify,
+  PhTextAlignLeft,
+  PhTextAlignRight,
+  PhTextB,
+  PhTextHOne,
+  PhTextHThree,
+  PhTextHTwo,
+  PhTextItalic,
+  PhTextStrikethrough,
+  PhTextSubscript,
+  PhTextSuperscript,
+  PhTextUnderline,
+} from "@phosphor-icons/vue";
+import ToolButton from "./ToolButton.vue";
 
 const props = defineProps<{
   editor: Editor;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   "open-link": [];
 }>();
+
+const fileInput = ref<HTMLInputElement | null>(null);
+const iconSize = 16;
 
 const is = (name: string, attrs?: Record<string, unknown>) =>
   computed(() => {
@@ -20,234 +50,308 @@ const isBold = is("bold");
 const isItalic = is("italic");
 const isUnderline = is("underline");
 const isStrike = is("strike");
+const isCode = is("code");
+const isCodeBlock = is("codeBlock");
 const isH1 = is("heading", { level: 1 });
 const isH2 = is("heading", { level: 2 });
 const isH3 = is("heading", { level: 3 });
 const isBullet = is("bulletList");
 const isOrdered = is("orderedList");
+const isTask = is("taskList");
 const isQuote = is("blockquote");
-const isCode = is("code");
 const isLink = is("link");
+const isHighlight = is("highlight");
+const isSuperscript = is("superscript");
+const isSubscript = is("subscript");
+
+const alignLeft = computed(() => {
+  void props.editor.state.selection;
+  return props.editor.isActive({ textAlign: "left" });
+});
+const alignCenter = computed(() => {
+  void props.editor.state.selection;
+  return props.editor.isActive({ textAlign: "center" });
+});
+const alignRight = computed(() => {
+  void props.editor.state.selection;
+  return props.editor.isActive({ textAlign: "right" });
+});
+const alignJustify = computed(() => {
+  void props.editor.state.selection;
+  return props.editor.isActive({ textAlign: "justify" });
+});
+
+const canUndo = computed(() => {
+  void props.editor.state;
+  return props.editor.can().undo();
+});
+
+const canRedo = computed(() => {
+  void props.editor.state;
+  return props.editor.can().redo();
+});
+
+const pickImage = () => {
+  fileInput.value?.click();
+};
+
+const onImageSelected = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file || !file.type.startsWith("image/")) {
+    return;
+  }
+
+  if (file.size > 1_200_000) {
+    window.alert("Image is too large. Please use an image under ~1.2MB.");
+    input.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const src = reader.result;
+    if (typeof src === "string") {
+      props.editor.chain().focus().setImage({ src }).run();
+    }
+  };
+  reader.readAsDataURL(file);
+  input.value = "";
+};
 </script>
 
 <template>
   <div class="toolbar" role="toolbar" aria-label="Text formatting">
-    <button
-      type="button"
-      class="tool"
-      :class="{ active: isBold }"
-      title="Bold"
-      aria-label="Bold"
-      :aria-pressed="isBold"
-      @mousedown.prevent
-      @click="editor.chain().focus().toggleBold().run()"
+    <input
+      ref="fileInput"
+      class="file-input"
+      type="file"
+      accept="image/*"
+      @change="onImageSelected"
+    />
+
+    <ToolButton
+      label="Undo"
+      :disabled="!canUndo"
+      @click="editor.chain().focus().undo().run()"
     >
-      <strong>B</strong>
-    </button>
-    <button
-      type="button"
-      class="tool"
-      :class="{ active: isItalic }"
-      title="Italic"
-      aria-label="Italic"
-      :aria-pressed="isItalic"
-      @mousedown.prevent
-      @click="editor.chain().focus().toggleItalic().run()"
+      <PhArrowCounterClockwise :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Redo"
+      :disabled="!canRedo"
+      @click="editor.chain().focus().redo().run()"
     >
-      <em>I</em>
-    </button>
-    <button
-      type="button"
-      class="tool"
-      :class="{ active: isUnderline }"
-      title="Underline"
-      aria-label="Underline"
-      :aria-pressed="isUnderline"
-      @mousedown.prevent
-      @click="editor.chain().focus().toggleUnderline().run()"
-    >
-      <span class="underline-label">U</span>
-    </button>
-    <button
-      type="button"
-      class="tool"
-      :class="{ active: isStrike }"
-      title="Strikethrough"
-      aria-label="Strikethrough"
-      :aria-pressed="isStrike"
-      @mousedown.prevent
-      @click="editor.chain().focus().toggleStrike().run()"
-    >
-      <span class="strike-label">S</span>
-    </button>
+      <PhArrowClockwise :size="iconSize" weight="bold" />
+    </ToolButton>
 
     <span class="divider" aria-hidden="true" />
 
-    <button
-      type="button"
-      class="tool"
-      :class="{ active: isH1 }"
-      title="Heading 1"
-      aria-label="Heading 1"
-      :aria-pressed="isH1"
-      @mousedown.prevent
+    <ToolButton
+      label="Heading 1"
+      :active="isH1"
+      :pressed="isH1"
       @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
     >
-      H1
-    </button>
-    <button
-      type="button"
-      class="tool"
-      :class="{ active: isH2 }"
-      title="Heading 2"
-      aria-label="Heading 2"
-      :aria-pressed="isH2"
-      @mousedown.prevent
+      <PhTextHOne :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Heading 2"
+      :active="isH2"
+      :pressed="isH2"
       @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
     >
-      H2
-    </button>
-    <button
-      type="button"
-      class="tool"
-      :class="{ active: isH3 }"
-      title="Heading 3"
-      aria-label="Heading 3"
-      :aria-pressed="isH3"
-      @mousedown.prevent
+      <PhTextHTwo :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Heading 3"
+      :active="isH3"
+      :pressed="isH3"
       @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
     >
-      H3
-    </button>
+      <PhTextHThree :size="iconSize" weight="bold" />
+    </ToolButton>
 
     <span class="divider" aria-hidden="true" />
 
-    <button
-      type="button"
-      class="tool"
-      :class="{ active: isBullet }"
-      title="Bullet list"
-      aria-label="Bullet list"
-      :aria-pressed="isBullet"
-      @mousedown.prevent
+    <ToolButton
+      label="Bullet list"
+      :active="isBullet"
+      :pressed="isBullet"
       @click="editor.chain().focus().toggleBulletList().run()"
     >
-      •
-    </button>
-    <button
-      type="button"
-      class="tool"
-      :class="{ active: isOrdered }"
-      title="Numbered list"
-      aria-label="Numbered list"
-      :aria-pressed="isOrdered"
-      @mousedown.prevent
+      <PhListBullets :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Ordered list"
+      :active="isOrdered"
+      :pressed="isOrdered"
       @click="editor.chain().focus().toggleOrderedList().run()"
     >
-      1.
-    </button>
-    <button
-      type="button"
-      class="tool"
-      :class="{ active: isQuote }"
-      title="Quote"
-      aria-label="Quote"
-      :aria-pressed="isQuote"
-      @mousedown.prevent
+      <PhListNumbers :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Task list"
+      :active="isTask"
+      :pressed="isTask"
+      @click="editor.chain().focus().toggleTaskList().run()"
+    >
+      <PhListChecks :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Quote"
+      :active="isQuote"
+      :pressed="isQuote"
       @click="editor.chain().focus().toggleBlockquote().run()"
     >
-      “
-    </button>
-    <button
-      type="button"
-      class="tool"
-      :class="{ active: isCode }"
-      title="Inline code"
-      aria-label="Inline code"
-      :aria-pressed="isCode"
-      @mousedown.prevent
-      @click="editor.chain().focus().toggleCode().run()"
+      <PhQuotes :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Code block"
+      :active="isCodeBlock"
+      :pressed="isCodeBlock"
+      @click="editor.chain().focus().toggleCodeBlock().run()"
     >
-      &lt;/&gt;
-    </button>
+      <PhCodeBlock :size="iconSize" weight="bold" />
+    </ToolButton>
 
     <span class="divider" aria-hidden="true" />
 
-    <button
-      type="button"
-      class="tool"
-      :class="{ active: isLink }"
-      title="Link"
-      aria-label="Link"
-      :aria-pressed="isLink"
-      @mousedown.prevent
-      @click="emit('open-link')"
+    <ToolButton
+      label="Bold"
+      :active="isBold"
+      :pressed="isBold"
+      @click="editor.chain().focus().toggleBold().run()"
     >
-      <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          d="M10 13a5 5 0 0 0 7.54.54l1.92-1.92a5 5 0 0 0-7.07-7.07l-1.1 1.1"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-        <path
-          d="M14 11a5 5 0 0 0-7.54-.54L4.54 12.38a5 5 0 0 0 7.07 7.07l1.1-1.1"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-      </svg>
-    </button>
+      <PhTextB :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Italic"
+      :active="isItalic"
+      :pressed="isItalic"
+      @click="editor.chain().focus().toggleItalic().run()"
+    >
+      <PhTextItalic :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Strikethrough"
+      :active="isStrike"
+      :pressed="isStrike"
+      @click="editor.chain().focus().toggleStrike().run()"
+    >
+      <PhTextStrikethrough :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Inline code"
+      :active="isCode"
+      :pressed="isCode"
+      @click="editor.chain().focus().toggleCode().run()"
+    >
+      <PhCode :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Underline"
+      :active="isUnderline"
+      :pressed="isUnderline"
+      @click="editor.chain().focus().toggleUnderline().run()"
+    >
+      <PhTextUnderline :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Highlight"
+      :active="isHighlight"
+      :pressed="isHighlight"
+      @click="editor.chain().focus().toggleHighlight().run()"
+    >
+      <PhHighlighter :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Link"
+      :active="isLink"
+      :pressed="isLink"
+      @click="$emit('open-link')"
+    >
+      <PhLink :size="iconSize" weight="bold" />
+    </ToolButton>
+
+    <span class="divider" aria-hidden="true" />
+
+    <ToolButton
+      label="Superscript"
+      :active="isSuperscript"
+      :pressed="isSuperscript"
+      @click="editor.chain().focus().toggleSuperscript().run()"
+    >
+      <PhTextSuperscript :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Subscript"
+      :active="isSubscript"
+      :pressed="isSubscript"
+      @click="editor.chain().focus().toggleSubscript().run()"
+    >
+      <PhTextSubscript :size="iconSize" weight="bold" />
+    </ToolButton>
+
+    <span class="divider" aria-hidden="true" />
+
+    <ToolButton
+      label="Align left"
+      :active="alignLeft"
+      :pressed="alignLeft"
+      @click="editor.chain().focus().setTextAlign('left').run()"
+    >
+      <PhTextAlignLeft :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Align center"
+      :active="alignCenter"
+      :pressed="alignCenter"
+      @click="editor.chain().focus().setTextAlign('center').run()"
+    >
+      <PhTextAlignCenter :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Align right"
+      :active="alignRight"
+      :pressed="alignRight"
+      @click="editor.chain().focus().setTextAlign('right').run()"
+    >
+      <PhTextAlignRight :size="iconSize" weight="bold" />
+    </ToolButton>
+    <ToolButton
+      label="Align justify"
+      :active="alignJustify"
+      :pressed="alignJustify"
+      @click="editor.chain().focus().setTextAlign('justify').run()"
+    >
+      <PhTextAlignJustify :size="iconSize" weight="bold" />
+    </ToolButton>
+
+    <span class="divider" aria-hidden="true" />
+
+    <ToolButton label="Add image" @click="pickImage">
+      <PhImage :size="iconSize" weight="bold" />
+      <span class="add-label">Add</span>
+    </ToolButton>
   </div>
 </template>
 
 <style scoped>
 .toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.15rem;
-  padding: 0.35rem;
-  border-radius: 999px;
+  gap: 0.12rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.65rem;
   background: var(--page-bg);
   border: 1px solid var(--toolbar-border);
-  overflow-x: auto;
-  max-width: min(94vw, 42rem);
+  max-width: min(96vw, 68rem);
 }
 
-.tool {
-  min-width: 2rem;
-  height: 2rem;
-  padding: 0 0.45rem;
-  border-radius: 999px;
-  color: var(--text-color);
-  font-family: inherit;
-  font-size: 0.8rem;
-  font-weight: 500;
-  line-height: 1;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.tool:hover {
-  background: var(--neutral-2);
-}
-
-.tool:focus-visible {
-  outline: 2px solid var(--red-1);
-  outline-offset: 1px;
-}
-
-.tool.active {
-  background: var(--red-1);
-  color: var(--neutral-0);
-}
-
-.tool.active:hover {
-  background: color-mix(in srgb, var(--red-1) 85%, black);
+.file-input {
+  display: none;
 }
 
 .divider {
@@ -258,18 +362,8 @@ const isLink = is("link");
   flex-shrink: 0;
 }
 
-.underline-label {
-  text-decoration: underline;
-  text-underline-offset: 0.15em;
-}
-
-.strike-label {
-  text-decoration: line-through;
-}
-
-.link-icon {
-  width: 0.95rem;
-  height: 0.95rem;
-  display: block;
+.add-label {
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 </style>

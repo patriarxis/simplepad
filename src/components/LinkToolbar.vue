@@ -137,8 +137,8 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.35rem;
-  border-radius: 999px;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.65rem;
   background: var(--page-bg);
   border: 1px solid var(--toolbar-border);
   max-width: min(94vw, 32rem);
@@ -150,7 +150,7 @@ onMounted(async () => {
   height: 2rem;
   padding: 0 0.75rem;
   border: 1px solid var(--toolbar-border);
-  border-radius: 999px;
+  border-radius: 0.45rem;
   background: var(--page-bg);
   color: var(--text-color);
   font: inherit;
@@ -165,7 +165,7 @@ onMounted(async () => {
 .link-action {
   height: 2rem;
   padding: 0 0.7rem;
-  border-radius: 999px;
+  border-radius: 0.45rem;
   color: var(--text-color);
   font: inherit;
   font-size: 0.8rem;

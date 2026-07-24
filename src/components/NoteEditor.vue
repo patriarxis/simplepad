@@ -3,6 +3,13 @@ import { onBeforeUnmount, onMounted, ref } from "vue";
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
+import TaskList from "@tiptap/extension-task-list";
+import TaskItem from "@tiptap/extension-task-item";
+import Image from "@tiptap/extension-image";
+import Superscript from "@tiptap/extension-superscript";
+import Subscript from "@tiptap/extension-subscript";
+import TextAlign from "@tiptap/extension-text-align";
+import Highlight from "@tiptap/extension-highlight";
 import EditorToolbar from "./EditorToolbar.vue";
 import {
   flushNotes,
@@ -31,6 +38,24 @@ const editor = useEditor({
     }),
     Placeholder.configure({
       placeholder: "Write something...",
+    }),
+    TaskList,
+    TaskItem.configure({
+      nested: true,
+    }),
+    Image.configure({
+      allowBase64: true,
+      HTMLAttributes: {
+        class: "note-image",
+      },
+    }),
+    Superscript,
+    Subscript,
+    TextAlign.configure({
+      types: ["heading", "paragraph"],
+    }),
+    Highlight.configure({
+      multicolor: false,
     }),
   ],
   content: loadNotes() || "<p></p>",
@@ -157,6 +182,97 @@ onBeforeUnmount(() => {
   margin: 0.2em 0;
 }
 
+.editor-surface :deep(.note-editor ul[data-type="taskList"]) {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.5em 0;
+}
+
+.editor-surface :deep(.note-editor ul[data-type="taskList"] li) {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.35em 0;
+}
+
+.editor-surface :deep(.note-editor ul[data-type="taskList"] li > label) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.editor-surface
+  :deep(.note-editor ul[data-type="taskList"] input[type="checkbox"]) {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  border: 1.5px solid var(--neutral-5);
+  border-radius: 0.25rem;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: grid;
+  place-content: center;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.editor-surface
+  :deep(
+    .note-editor ul[data-type="taskList"] input[type="checkbox"]::before
+  ) {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  transform: scale(0);
+  transition: transform 0.12s ease;
+  background-color: #0d0d0d;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+.editor-surface
+  :deep(
+    .note-editor
+      ul[data-type="taskList"]
+      input[type="checkbox"]:checked
+  ) {
+  background: var(--red-1);
+  border-color: var(--red-1);
+}
+
+.editor-surface
+  :deep(
+    .note-editor
+      ul[data-type="taskList"]
+      input[type="checkbox"]:checked::before
+  ) {
+  transform: scale(1);
+}
+
+.editor-surface
+  :deep(
+    .note-editor ul[data-type="taskList"] li[data-checked="true"] > div
+  ) {
+  text-decoration: line-through;
+  color: var(--neutral-5);
+}
+
+.editor-surface :deep(.note-editor ul[data-type="taskList"] li > div) {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.5;
+}
+
+.editor-surface :deep(.note-editor ul[data-type="taskList"] li > div > p) {
+  margin: 0;
+}
+
 .editor-surface :deep(.note-editor blockquote) {
   margin: 0.8em 0;
   padding-left: 1em;
@@ -172,6 +288,49 @@ onBeforeUnmount(() => {
   background: var(--neutral-2);
 }
 
+.editor-surface :deep(.note-editor pre) {
+  margin: 0.8em 0;
+  padding: 0.85em 1em;
+  border-radius: 0.5rem;
+  background: var(--neutral-2);
+  overflow-x: auto;
+}
+
+.editor-surface :deep(.note-editor pre code) {
+  padding: 0;
+  background: transparent;
+}
+
+.editor-surface :deep(.note-editor mark) {
+  background: color-mix(in srgb, var(--red-1) 35%, transparent);
+  color: inherit;
+  border-radius: 0.15em;
+  padding: 0 0.1em;
+}
+
+.editor-surface :deep(.note-editor .note-image) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0.9em 0;
+  border-radius: 0.4rem;
+  border: 0 solid transparent;
+  box-shadow: 0 0 0 0 transparent;
+  transition: box-shadow 0.15s ease;
+}
+
+.editor-surface :deep(.note-editor .note-image.ProseMirror-selectednode) {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--red-1);
+}
+
+.editor-surface :deep(.note-editor [style*="text-align: left"]),
+.editor-surface :deep(.note-editor [style*="text-align: center"]),
+.editor-surface :deep(.note-editor [style*="text-align: right"]),
+.editor-surface :deep(.note-editor [style*="text-align: justify"]) {
+  text-wrap: pretty;
+}
+
 .editor-surface :deep(.note-editor a) {
   color: var(--red-1);
   text-decoration: underline;
@@ -182,6 +341,11 @@ onBeforeUnmount(() => {
   border: none;
   border-top: 1px solid var(--border);
   margin: 1.5em 0;
+}
+
+.editor-surface :deep(.note-editor sup),
+.editor-surface :deep(.note-editor sub) {
+  font-size: 0.75em;
 }
 
 .save-toast {

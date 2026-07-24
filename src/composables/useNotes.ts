@@ -47,6 +47,11 @@ export function saveNotes(html: string): boolean {
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 let pendingHtml: string | null = null;
 
+/** Latest note HTML, including any unsaved debounce buffer. */
+export function getLatestNotes(): string {
+  return pendingHtml ?? loadNotes();
+}
+
 export function saveNotesDebounced(html: string, delay = 250) {
   pendingHtml = html;
   if (saveTimer) {
