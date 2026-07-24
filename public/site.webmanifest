@@ -2,11 +2,11 @@
   "name": "Simplepad",
   "short_name": "Simplepad",
   "description": "A private rich-text notepad that auto-saves in your browser.",
-  "start_url": "/simplepad/",
-  "scope": "/simplepad/",
+  "start_url": "/",
+  "scope": "/",
   "icons": [
     {
-      "src": "/simplepad/favicon.svg",
+      "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

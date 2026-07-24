@@ -29,4 +29,4 @@ npm run build
 npm run preview
 ```
 
-Built assets use base path `/simplepad/` for GitHub Pages project hosting.
+Built assets use base path `/` (Vercel / custom domain root).

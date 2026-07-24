@@ -26,9 +26,9 @@ function vendorChunk(id: string): string | undefined {
 }
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command }) => ({
-  // Project Pages needs /simplepad/; local dev stays on /
-  base: command === "build" ? "/simplepad/" : "/",
+export default defineConfig({
+  // Root base for Vercel (simplepad.patriarxis.com)
+  base: "/",
   plugins: [vue()],
   resolve: {
     alias: {
@@ -42,4 +42,4 @@ export default defineConfig(({ command }) => ({
       },
     },
   },
-}));
+});
