@@ -20,6 +20,10 @@ function vendorChunk(id: string): string | undefined {
     return "tiptap";
   }
 
+  if (id.includes("lowlight") || id.includes("highlight.js")) {
+    return "highlight";
+  }
+
   if (id.includes("vue") || id.includes("@vue")) {
     return "vue";
   }

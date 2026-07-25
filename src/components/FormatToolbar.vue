@@ -13,6 +13,7 @@ import {
   PhListChecks,
   PhListNumbers,
   PhQuotes,
+  PhTable,
   PhTextAlignCenter,
   PhTextAlignJustify,
   PhTextAlignLeft,
@@ -39,6 +40,11 @@ defineEmits<{
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const iconSize = 16;
+const mod =
+  typeof navigator !== "undefined" && /Mac|iPhone|iPad/i.test(navigator.userAgent)
+    ? "⌘"
+    : "Ctrl";
+
 
 const is = (name: string, attrs?: Record<string, unknown>) =>
   computed(() => {
@@ -59,6 +65,7 @@ const isBullet = is("bulletList");
 const isOrdered = is("orderedList");
 const isTask = is("taskList");
 const isQuote = is("blockquote");
+const isTable = is("table");
 const isLink = is("link");
 const isHighlight = is("highlight");
 const isSuperscript = is("superscript");
@@ -131,14 +138,14 @@ const onImageSelected = (event: Event) => {
     />
 
     <ToolButton
-      label="Undo"
+      :label="`Undo · ${mod}+Z`"
       :disabled="!canUndo"
       @click="editor.chain().focus().undo().run()"
     >
       <PhArrowCounterClockwise :size="iconSize" weight="bold" />
     </ToolButton>
     <ToolButton
-      label="Redo"
+      :label="`Redo · ${mod}+Shift+Z`"
       :disabled="!canRedo"
       @click="editor.chain().focus().redo().run()"
     >
@@ -148,7 +155,7 @@ const onImageSelected = (event: Event) => {
     <span class="divider" aria-hidden="true" />
 
     <ToolButton
-      label="Heading 1"
+      label="Heading 1 · # space"
       :active="isH1"
       :pressed="isH1"
       @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
@@ -156,7 +163,7 @@ const onImageSelected = (event: Event) => {
       <PhTextHOne :size="iconSize" weight="bold" />
     </ToolButton>
     <ToolButton
-      label="Heading 2"
+      label="Heading 2 · ## space"
       :active="isH2"
       :pressed="isH2"
       @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
@@ -164,7 +171,7 @@ const onImageSelected = (event: Event) => {
       <PhTextHTwo :size="iconSize" weight="bold" />
     </ToolButton>
     <ToolButton
-      label="Heading 3"
+      label="Heading 3 · ### space"
       :active="isH3"
       :pressed="isH3"
       @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
@@ -175,7 +182,7 @@ const onImageSelected = (event: Event) => {
     <span class="divider" aria-hidden="true" />
 
     <ToolButton
-      label="Bullet list"
+      label="Bullet list · - space"
       :active="isBullet"
       :pressed="isBullet"
       @click="editor.chain().focus().toggleBulletList().run()"
@@ -183,7 +190,7 @@ const onImageSelected = (event: Event) => {
       <PhListBullets :size="iconSize" weight="bold" />
     </ToolButton>
     <ToolButton
-      label="Ordered list"
+      label="Ordered list · 1. space"
       :active="isOrdered"
       :pressed="isOrdered"
       @click="editor.chain().focus().toggleOrderedList().run()"
@@ -191,7 +198,7 @@ const onImageSelected = (event: Event) => {
       <PhListNumbers :size="iconSize" weight="bold" />
     </ToolButton>
     <ToolButton
-      label="Task list"
+      label="Task list · -[] space"
       :active="isTask"
       :pressed="isTask"
       @click="editor.chain().focus().toggleTaskList().run()"
@@ -199,7 +206,7 @@ const onImageSelected = (event: Event) => {
       <PhListChecks :size="iconSize" weight="bold" />
     </ToolButton>
     <ToolButton
-      label="Quote"
+      label="Quote · > space"
       :active="isQuote"
       :pressed="isQuote"
       @click="editor.chain().focus().toggleBlockquote().run()"
@@ -207,18 +214,34 @@ const onImageSelected = (event: Event) => {
       <PhQuotes :size="iconSize" weight="bold" />
     </ToolButton>
     <ToolButton
-      label="Code block"
+      label="Code block · ```js"
       :active="isCodeBlock"
       :pressed="isCodeBlock"
       @click="editor.chain().focus().toggleCodeBlock().run()"
     >
       <PhCodeBlock :size="iconSize" weight="bold" />
     </ToolButton>
+    <ToolButton
+      :label="isTable ? 'Delete table' : 'Insert table'"
+      :active="isTable"
+      :pressed="isTable"
+      @click="
+        isTable
+          ? editor.chain().focus().deleteTable().run()
+          : editor
+              .chain()
+              .focus()
+              .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+              .run()
+      "
+    >
+      <PhTable :size="iconSize" weight="bold" />
+    </ToolButton>
 
     <span class="divider" aria-hidden="true" />
 
     <ToolButton
-      label="Bold"
+      :label="`Bold · ${mod}+B / **text**`"
       :active="isBold"
       :pressed="isBold"
       @click="editor.chain().focus().toggleBold().run()"
@@ -226,7 +249,7 @@ const onImageSelected = (event: Event) => {
       <PhTextB :size="iconSize" weight="bold" />
     </ToolButton>
     <ToolButton
-      label="Italic"
+      :label="`Italic · ${mod}+I / *text*`"
       :active="isItalic"
       :pressed="isItalic"
       @click="editor.chain().focus().toggleItalic().run()"
@@ -234,7 +257,7 @@ const onImageSelected = (event: Event) => {
       <PhTextItalic :size="iconSize" weight="bold" />
     </ToolButton>
     <ToolButton
-      label="Strikethrough"
+      label="Strikethrough · ~~text~~"
       :active="isStrike"
       :pressed="isStrike"
       @click="editor.chain().focus().toggleStrike().run()"
@@ -242,7 +265,7 @@ const onImageSelected = (event: Event) => {
       <PhTextStrikethrough :size="iconSize" weight="bold" />
     </ToolButton>
     <ToolButton
-      label="Inline code"
+      label="Inline code · `code`"
       :active="isCode"
       :pressed="isCode"
       @click="editor.chain().focus().toggleCode().run()"
@@ -250,7 +273,7 @@ const onImageSelected = (event: Event) => {
       <PhCode :size="iconSize" weight="bold" />
     </ToolButton>
     <ToolButton
-      label="Underline"
+      :label="`Underline · ${mod}+U`"
       :active="isUnderline"
       :pressed="isUnderline"
       @click="editor.chain().focus().toggleUnderline().run()"
@@ -258,7 +281,7 @@ const onImageSelected = (event: Event) => {
       <PhTextUnderline :size="iconSize" weight="bold" />
     </ToolButton>
     <ToolButton
-      label="Highlight"
+      label="Highlight · ==text=="
       :active="isHighlight"
       :pressed="isHighlight"
       @click="editor.chain().focus().toggleHighlight().run()"
@@ -266,7 +289,7 @@ const onImageSelected = (event: Event) => {
       <PhHighlighter :size="iconSize" weight="bold" />
     </ToolButton>
     <ToolButton
-      label="Link"
+      label="Link · [text](url)"
       :active="isLink"
       :pressed="isLink"
       @click="$emit('open-link')"
@@ -332,7 +355,6 @@ const onImageSelected = (event: Event) => {
 
     <ToolButton label="Add image" @click="pickImage">
       <PhImage :size="iconSize" weight="bold" />
-      <span class="add-label">Add</span>
     </ToolButton>
   </div>
 </template>
@@ -360,10 +382,5 @@ const onImageSelected = (event: Event) => {
   margin: 0 0.2rem;
   background: var(--toolbar-border);
   flex-shrink: 0;
-}
-
-.add-label {
-  font-size: 0.75rem;
-  font-weight: 500;
 }
 </style>

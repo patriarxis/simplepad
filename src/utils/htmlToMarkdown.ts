@@ -127,12 +127,64 @@ function convertBlocks(nodes: NodeListOf<ChildNode> | Node[], listCtx?: {
     if (tag === "pre") {
       const code = el.querySelector("code");
       const text = (code ?? el).textContent ?? "";
-      parts.push(`\`\`\`\n${text.replace(/\n$/, "")}\n\`\`\``);
+      const langMatch = (code?.getAttribute("class") ?? "").match(
+        /language-([^\s]+)/,
+      );
+      const lang = langMatch?.[1] ?? "";
+      parts.push(`\`\`\`${lang}\n${text.replace(/\n$/, "")}\n\`\`\``);
       continue;
     }
 
     if (tag === "hr") {
       parts.push("---");
+      continue;
+    }
+
+    if (tag === "table") {
+      const rows = Array.from(el.querySelectorAll("tr")).filter(isElement);
+      if (rows.length === 0) {
+        continue;
+      }
+
+      const matrix = rows.map((row) =>
+        Array.from(row.children)
+          .filter(
+            (cell) =>
+              isElement(cell) &&
+              (cell.tagName.toLowerCase() === "th" ||
+                cell.tagName.toLowerCase() === "td"),
+          )
+          .map((cell) =>
+            Array.from(cell.childNodes)
+              .map(convertInline)
+              .join("")
+              .trim()
+              .replace(/\|/g, "\\|"),
+          ),
+      );
+
+      const colCount = Math.max(...matrix.map((row) => row.length), 0);
+      if (colCount === 0) {
+        continue;
+      }
+
+      const padded = matrix.map((row) => {
+        const copy = [...row];
+        while (copy.length < colCount) {
+          copy.push("");
+        }
+        return copy;
+      });
+
+      const header = padded[0];
+      const body = padded.slice(1);
+      const sep = Array.from({ length: colCount }, () => "---");
+      const lines = [
+        `| ${header.join(" | ")} |`,
+        `| ${sep.join(" | ")} |`,
+        ...body.map((row) => `| ${row.join(" | ")} |`),
+      ];
+      parts.push(lines.join("\n"));
       continue;
     }
 

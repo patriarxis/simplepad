@@ -75,6 +75,11 @@ onBeforeUnmount(clearTip);
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
+.tool :deep(svg) {
+  display: block;
+  flex-shrink: 0;
+}
+
 .tool:hover {
   background: var(--neutral-2);
 }

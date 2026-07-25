@@ -4,13 +4,17 @@ import { EditorContent, useEditor } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import TaskList from "@tiptap/extension-task-list";
-import TaskItem from "@tiptap/extension-task-item";
 import Image from "@tiptap/extension-image";
 import Superscript from "@tiptap/extension-superscript";
 import Subscript from "@tiptap/extension-subscript";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
+import { TableKit } from "@tiptap/extension-table";
 import EditorToolbar from "./EditorToolbar.vue";
+import { HighlightedCodeBlock } from "../extensions/highlightedCodeBlock";
+import { MarkdownLinkInput } from "../extensions/markdownLinkInput";
+import { MarkdownTaskItem } from "../extensions/markdownTaskItem";
+import { markdownClipboardToHtml } from "../utils/markdownPaste";
 import {
   flushNotes,
   loadNotes,
@@ -26,6 +30,7 @@ const editor = useEditor({
   extensions: [
     StarterKit.configure({
       heading: { levels: [1, 2, 3] },
+      codeBlock: false,
       link: {
         openOnClick: false,
         autolink: true,
@@ -36,12 +41,22 @@ const editor = useEditor({
         },
       },
     }),
+    HighlightedCodeBlock,
+    MarkdownLinkInput,
     Placeholder.configure({
       placeholder: "Write something...",
     }),
     TaskList,
-    TaskItem.configure({
+    MarkdownTaskItem.configure({
       nested: true,
+    }),
+    TableKit.configure({
+      table: {
+        resizable: true,
+        HTMLAttributes: {
+          class: "note-table",
+        },
+      },
     }),
     Image.configure({
       allowBase64: true,
@@ -64,6 +79,36 @@ const editor = useEditor({
       class: "note-editor",
       "aria-label": "Note editor",
       spellcheck: "true",
+    },
+    handlePaste: (_view, event) => {
+      const clipboard = event.clipboardData;
+      if (!clipboard) {
+        return false;
+      }
+
+      const plain = clipboard.getData("text/plain");
+      if (!plain) {
+        return false;
+      }
+
+      // Prefer our markdown conversion when clipboard HTML isn't already structured
+      const html = clipboard.getData("text/html");
+      const hasRichHtml =
+        Boolean(html) &&
+        (/<(table|ul|ol|h[1-6]|blockquote|pre)\b/i.test(html) ||
+          /data-type=["']task(List|Item)["']/i.test(html));
+
+      if (hasRichHtml) {
+        return false;
+      }
+
+      const converted = markdownClipboardToHtml(plain);
+      if (!converted || !editor.value) {
+        return false;
+      }
+
+      editor.value.chain().focus().insertContent(converted).run();
+      return true;
     },
   },
   onUpdate: ({ editor: current }) => {
@@ -296,9 +341,135 @@ onBeforeUnmount(() => {
   overflow-x: auto;
 }
 
+.editor-surface :deep(.note-editor .code-block) {
+  margin: 0.8em 0;
+}
+
+.editor-surface :deep(.note-editor .code-block pre) {
+  margin: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
 .editor-surface :deep(.note-editor pre code) {
   padding: 0;
   background: transparent;
+  color: inherit;
+}
+
+/* lowlight / highlight.js token colors */
+.editor-surface :deep(.note-editor pre code .hljs-comment),
+.editor-surface :deep(.note-editor pre code .hljs-quote) {
+  color: var(--neutral-5);
+  font-style: italic;
+}
+
+.editor-surface :deep(.note-editor pre code .hljs-keyword),
+.editor-surface :deep(.note-editor pre code .hljs-selector-tag),
+.editor-surface :deep(.note-editor pre code .hljs-addition) {
+  color: var(--red-1);
+}
+
+.editor-surface :deep(.note-editor pre code .hljs-number),
+.editor-surface :deep(.note-editor pre code .hljs-string),
+.editor-surface :deep(.note-editor pre code .hljs-meta .hljs-meta-string),
+.editor-surface :deep(.note-editor pre code .hljs-literal),
+.editor-surface :deep(.note-editor pre code .hljs-doctag),
+.editor-surface :deep(.note-editor pre code .hljs-regexp) {
+  color: #0a7a5a;
+}
+
+.editor-surface :deep(.note-editor pre code .hljs-title),
+.editor-surface :deep(.note-editor pre code .hljs-section),
+.editor-surface :deep(.note-editor pre code .hljs-name),
+.editor-surface :deep(.note-editor pre code .hljs-selector-id),
+.editor-surface :deep(.note-editor pre code .hljs-selector-class) {
+  color: #2f6fed;
+}
+
+.editor-surface :deep(.note-editor pre code .hljs-attribute),
+.editor-surface :deep(.note-editor pre code .hljs-attr),
+.editor-surface :deep(.note-editor pre code .hljs-variable),
+.editor-surface :deep(.note-editor pre code .hljs-template-variable),
+.editor-surface :deep(.note-editor pre code .hljs-class .hljs-title),
+.editor-surface :deep(.note-editor pre code .hljs-type) {
+  color: #b35c00;
+}
+
+.editor-surface :deep(.note-editor pre code .hljs-symbol),
+.editor-surface :deep(.note-editor pre code .hljs-bullet),
+.editor-surface :deep(.note-editor pre code .hljs-link),
+.editor-surface :deep(.note-editor pre code .hljs-meta),
+.editor-surface :deep(.note-editor pre code .hljs-selector-attr),
+.editor-surface :deep(.note-editor pre code .hljs-selector-pseudo),
+.editor-surface :deep(.note-editor pre code .hljs-built_in),
+.editor-surface :deep(.note-editor pre code .hljs-builtin-name) {
+  color: #6b5ce7;
+}
+
+.editor-surface :deep(.note-editor pre code .hljs-deletion) {
+  color: var(--red-1);
+}
+
+.editor-surface :deep(.note-editor pre code .hljs-emphasis) {
+  font-style: italic;
+}
+
+.editor-surface :deep(.note-editor pre code .hljs-strong) {
+  font-weight: 700;
+}
+
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-number),
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-string),
+:root[data-theme="dark"]
+  .editor-surface
+  :deep(.note-editor pre code .hljs-meta .hljs-meta-string),
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-literal),
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-doctag),
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-regexp) {
+  color: #3dd68c;
+}
+
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-title),
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-section),
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-name),
+:root[data-theme="dark"]
+  .editor-surface
+  :deep(.note-editor pre code .hljs-selector-id),
+:root[data-theme="dark"]
+  .editor-surface
+  :deep(.note-editor pre code .hljs-selector-class) {
+  color: #6ea8fe;
+}
+
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-attribute),
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-attr),
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-variable),
+:root[data-theme="dark"]
+  .editor-surface
+  :deep(.note-editor pre code .hljs-template-variable),
+:root[data-theme="dark"]
+  .editor-surface
+  :deep(.note-editor pre code .hljs-class .hljs-title),
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-type) {
+  color: #ffb86c;
+}
+
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-symbol),
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-bullet),
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-link),
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-meta),
+:root[data-theme="dark"]
+  .editor-surface
+  :deep(.note-editor pre code .hljs-selector-attr),
+:root[data-theme="dark"]
+  .editor-surface
+  :deep(.note-editor pre code .hljs-selector-pseudo),
+:root[data-theme="dark"] .editor-surface :deep(.note-editor pre code .hljs-built_in),
+:root[data-theme="dark"]
+  .editor-surface
+  :deep(.note-editor pre code .hljs-builtin-name) {
+  color: #b4a7ff;
 }
 
 .editor-surface :deep(.note-editor mark) {
@@ -335,6 +506,52 @@ onBeforeUnmount(() => {
   color: var(--red-1);
   text-decoration: underline;
   text-underline-offset: 0.15em;
+}
+
+.editor-surface :deep(.note-editor .tableWrapper) {
+  margin: 0.9em 0;
+  overflow-x: auto;
+}
+
+.editor-surface :deep(.note-editor table.note-table),
+.editor-surface :deep(.note-editor table) {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  overflow: hidden;
+}
+
+.editor-surface :deep(.note-editor th),
+.editor-surface :deep(.note-editor td) {
+  position: relative;
+  min-width: 4rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--border);
+  vertical-align: top;
+  text-align: left;
+}
+
+.editor-surface :deep(.note-editor th) {
+  font-weight: 600;
+  background: var(--neutral-2);
+}
+
+.editor-surface :deep(.note-editor .selectedCell) {
+  background: color-mix(in srgb, var(--red-1) 16%, transparent);
+}
+
+.editor-surface :deep(.note-editor .column-resize-handle) {
+  position: absolute;
+  top: 0;
+  right: -1px;
+  bottom: 0;
+  width: 3px;
+  background: var(--red-1);
+  pointer-events: none;
+}
+
+.editor-surface :deep(.note-editor.resize-cursor) {
+  cursor: col-resize;
 }
 
 .editor-surface :deep(.note-editor hr) {

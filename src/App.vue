@@ -1,28 +1,102 @@
 <script setup lang="ts">
-import { defineAsyncComponent } from "vue";
+import { computed, defineAsyncComponent, ref } from "vue";
 import { useTheme } from "./composables/useTheme";
-import { flushNotes, getLatestNotes } from "./composables/useNotes";
+import {
+  flushNotes,
+  getLatestNotes,
+  saveNotes,
+} from "./composables/useNotes";
 import {
   downloadMarkdown,
   htmlToMarkdown,
 } from "./utils/htmlToMarkdown";
+import { markdownToHtml } from "./utils/markdownToHtml";
 
 const NoteEditor = defineAsyncComponent(
   () => import("./components/NoteEditor.vue"),
 );
+const MarkdownSource = defineAsyncComponent(
+  () => import("./components/MarkdownSource.vue"),
+);
+
+type ViewMode = "preview" | "markdown";
 
 const { isDark, toggleTheme } = useTheme();
+const viewMode = ref<ViewMode>("preview");
+const markdownDraft = ref("");
+const isMarkdown = computed(() => viewMode.value === "markdown");
+
+function toggleViewMode() {
+  flushNotes();
+
+  if (viewMode.value === "preview") {
+    markdownDraft.value = htmlToMarkdown(getLatestNotes());
+    viewMode.value = "markdown";
+    return;
+  }
+
+  saveNotes(markdownToHtml(markdownDraft.value));
+  viewMode.value = "preview";
+}
 
 function onDownloadMd() {
   flushNotes();
-  const markdown = htmlToMarkdown(getLatestNotes());
-  downloadMarkdown(markdown || "");
+
+  if (viewMode.value === "markdown") {
+    downloadMarkdown(markdownDraft.value || "");
+    return;
+  }
+
+  downloadMarkdown(htmlToMarkdown(getLatestNotes()) || "");
 }
 </script>
 
 <template>
   <div class="app">
     <div class="app-actions">
+      <button
+        type="button"
+        class="action-btn"
+        :title="isMarkdown ? 'Switch to preview' : 'Switch to Markdown'"
+        :aria-label="isMarkdown ? 'Switch to preview' : 'Switch to Markdown'"
+        :aria-pressed="isMarkdown"
+        @click="toggleViewMode"
+      >
+        <!-- Preview mode: show code icon to enter MD -->
+        <svg
+          v-if="!isMarkdown"
+          class="action-icon"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            d="M8.5 8 5 12l3.5 4M15.5 8 19 12l-3.5 4M13 7l-2 10"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <!-- Markdown mode: show preview/doc icon to return -->
+        <svg v-else class="action-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            d="M4 5h16v14H4z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M8 9h8M8 12h8M8 15h5"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+
       <button
         type="button"
         class="action-btn"
@@ -73,7 +147,8 @@ function onDownloadMd() {
       </button>
     </div>
 
-    <NoteEditor />
+    <NoteEditor v-if="viewMode === 'preview'" />
+    <MarkdownSource v-else v-model="markdownDraft" />
   </div>
 </template>
 
@@ -103,7 +178,7 @@ function onDownloadMd() {
   justify-content: center;
   color: var(--text-color);
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .action-btn:hover {
@@ -118,5 +193,6 @@ function onDownloadMd() {
 .action-icon {
   width: 1.25rem;
   height: 1.25rem;
+  display: block;
 }
 </style>
