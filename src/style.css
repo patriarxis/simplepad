@@ -97,6 +97,14 @@ body {
   height: 100%;
   overflow: hidden;
   background-color: var(--page-bg);
+  /* Subtle planner-style dot grid (same as Signet) */
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--text-color) 14%, transparent) 0.7px,
+    transparent 0.8px
+  );
+  background-size: 14px 14px;
+  background-position: 0 0;
   color: var(--text-color);
 }
 
